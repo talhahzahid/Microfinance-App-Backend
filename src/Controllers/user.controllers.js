@@ -76,7 +76,7 @@ const signIn = async (req, res) => {
       password: generatedPassword,
     });
     const mailInfo = await transporter.sendMail({
-      from: `"Microfinance App 👤" <${process.env.EMAIL_USER}>`,
+      from: `"Microfinance App" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your Microfinance App Password",
       text: `Hi ${userName},\n\nYour account has been created.\nYour password is: ${generatedPassword}`,
@@ -105,31 +105,54 @@ const signIn = async (req, res) => {
 // login handler
 const login = async (req, res) => {
   const { cnic, password } = req.body;
+  console.log(password);
   if (!cnic) {
-    return res.status(400).json({ message: "Cnic is required" });
+    return res.status(400).json({ message: "CNIC is required" });
   }
   if (!password) {
     return res.status(400).json({ message: "Password is required" });
   }
   try {
     const existingUser = await User.findOne({ cnic });
+    console.log(existingUser, "user");
     if (!existingUser) {
-      return res
-        .status(400)
-        .json({ message: "Cnic not found try to use different cnic" });
+      return res.status(400).json({
+        message: "CNIC not found. Try using a different CNIC.",
+      });
     }
-    const validatePassword = await bcrpyt.compare(
-      existingUser.password,
-      password
+    console.log(existingUser.password, "pass");
+    const isPasswordValid = await bcrpyt.compare(
+      password,
+      existingUser.password
     );
-    if (!validatePassword) {
-      return res.status(400).json({ message: "Invalid password " });
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "Invalid password" });
     }
     const refreshToken = generateRefershToken(existingUser);
     const accessToken = generateAccessToken(existingUser);
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "None",
+    });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "None",
+    });
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: existingUser._id,
+        userName: existingUser.userName,
+        email: existingUser.email,
+        cnic: existingUser.cnic,
+      },
+    });
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-export { signIn };
+export { signIn, login };
