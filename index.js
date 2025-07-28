@@ -14,7 +14,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://microfinance-app-frontend-phi.vercel.app",
-      "https://microfinance-app-dashboard.vercel.app/",
+      "https://microfinance-app-dashboard.vercel.app",
     ],
     credentials: true,
   })
