@@ -10,6 +10,7 @@ import {
 const router = express.Router();
 
 router.post("/addLoan", createLoanForm);
+
 router.get("/viewRequest", viewFormRequest);
 router.get("/loanform/stats", getLoanFormStats);
 router.put("/loanform/status/:id", updateLoanStatus);
