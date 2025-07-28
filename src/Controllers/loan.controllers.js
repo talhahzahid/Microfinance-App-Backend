@@ -26,6 +26,14 @@ const createLoanForm = async (req, res) => {
       }
     }
 
+    const existing = await LoanForm.findOne({
+      "applicantInfo.cnic": applicantInfo.cnic,
+    });
+
+    if (existing) {
+      return res.status(409).json({ error: "Applicant CNIC already exists." });
+    }
+
     // Check for all required loan details
     const requiredLoanFields = [
       "loanType",
@@ -70,7 +78,7 @@ const createLoanForm = async (req, res) => {
       }
     }
 
-    // Save to DB
+    // Save
     const newLoanForm = new LoanForm({
       applicantInfo,
       loanDetails,
@@ -88,7 +96,7 @@ const createLoanForm = async (req, res) => {
 // view all form request
 const viewFormRequest = async (req, res) => {
   try {
-    const getAllForm = await LoanForm.find({});
+    const getAllForm = await LoanForm.find().sort({ createdAt: -1 });
     res.status(200).json({ message: "Successfully Fetch", getAllForm });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -165,6 +173,7 @@ const getSingleApplication = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export {
   createLoanForm,
   viewFormRequest,
